@@ -3,4 +3,4 @@ This is a project of wind speed prediction using LSTM with multiple inputs and m
 Single-Step Prediction
 
 
-Update: Added multi-step prediction function.Setting seq_out_len controls the number of steps in the prediction.
+Update: Added multi-step prediction function.Setting seq_out_len controls the number of steps in the prediction.model
