@@ -35,12 +35,12 @@ class Model(nn.Module):
         self.num_layers = num_layers
         self.output_dim = output_dim  # 添加这一行来初始化output_dim
         self.seq_out_len = seq_out_len
-        self.rnn = nn.RNN(input_dim, hidden_dim, num_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_dim, output_dim * seq_out_len)  # 输出层
 
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
-        out, _ = self.rnn(x, h0)  # 只传递 h0
+        out, _ = self.lstm(x, h0)  # 只传递 h0
         out = out[:, -1, :]  # 只取 RNN 最后一个时间步的输出
         out = self.fc(out)
         return out.view(x.size(0), -1, self.output_dim)  # 重塑输出以匹配预期的多步格式
@@ -49,10 +49,13 @@ class Model(nn.Module):
 plt.rcParams['font.sans-serif'] = ['SimHei']  # 显示中文
 plt.rcParams['axes.unicode_minus'] = False  # 显示负号
 
-data = pd.read_excel('17+18-已处理.xlsx')
-data = data.iloc[1:, 1:]
+data = pd.read_excel('风机故障数据-已处理.xlsx', skiprows=1)
+# 删除最后一行
+data = data.iloc[:-1, :-1]
+N = data.shape[1]  # 获取数据集的总列数
+data= data.iloc[:, 13:N]
 
-look_back = 4
+look_back = 6
 
 # 窗口函数
 # 修改split_sequence函数来生成多步标签
@@ -102,7 +105,7 @@ for seq_out_len in seq_out_lens:
     num_runs = 10
     for run in range(num_runs):
         # 模型定义
-        model = Model(input_dim=X_train.shape[-1], hidden_dim=64, num_layers=1, output_dim=14, seq_out_len=seq_out_len)
+        model = Model(input_dim=X_train.shape[-1], hidden_dim=64, num_layers=1, output_dim=29, seq_out_len=seq_out_len)
         criterion = nn.MSELoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
