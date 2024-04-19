@@ -4,3 +4,5 @@ Single-Step Prediction
 
 
 2023.12.3 Update: Added multi-step prediction function.Setting seq_out_len controls the number of steps in the prediction.The model.py file is not needed, just run baseline_model.py.Only the pytorch version has been modified
+
+2024.4.19 Update:The interval prediction function has been added and evaluated. Run only model.py.
