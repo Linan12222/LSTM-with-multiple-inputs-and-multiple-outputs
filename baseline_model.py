@@ -26,7 +26,7 @@ class StreamToLogger(object):
         self.terminal.flush()
         self.log.flush()
 
-sys.stdout = StreamToLogger("console_output_LSTM.txt")
+sys.stdout = StreamToLogger("console_output_GRU.txt")
 
 def negative_log_likelihood(y_pred, y_true, sigma):
     mu, sigma = y_pred
@@ -63,28 +63,28 @@ class Model(nn.Module):
         self.num_layers = num_layers
         self.output_dim = output_dim
         self.seq_out_len = seq_out_len
-        self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True)
+        self.gru = nn.GRU(input_dim, hidden_dim, num_layers, batch_first=True)
         self.fc_mu = nn.Linear(hidden_dim, output_dim * seq_out_len)
         self.fc_sigma = nn.Linear(hidden_dim, output_dim * seq_out_len)
-    #rnn
-    # def forward(self, x):
-    #     h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
-    #     out, _ = self.lstm(x, h0)
-    #     out = out[:, -1, :]
-    #     mu = self.fc_mu(out)
-    #     sigma = torch.exp(self.fc_sigma(out))
-    #     return mu.view(x.size(0), self.seq_out_len, self.output_dim), sigma.view(x.size(0), self.seq_out_len, self.output_dim)
-
-    #lstm and gru
+    # rnn and gru
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)  # 初始化细胞状态
-        out, _ = self.lstm(x, (h0, c0))  # 同时传递隐藏状态和细胞状态
+        out, _ = self.gru(x, h0)
         out = out[:, -1, :]
         mu = self.fc_mu(out)
         sigma = torch.exp(self.fc_sigma(out))
-        return mu.view(x.size(0), self.seq_out_len, self.output_dim), sigma.view(x.size(0), self.seq_out_len,
-                                                                                 self.output_dim)
+        return mu.view(x.size(0), self.seq_out_len, self.output_dim), sigma.view(x.size(0), self.seq_out_len, self.output_dim)
+
+    # #lstm
+    # def forward(self, x):
+    #     h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
+    #     c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)  # 初始化细胞状态
+    #     out, _ = self.gru(x, (h0, c0))  # 同时传递隐藏状态和细胞状态
+    #     out = out[:, -1, :]
+    #     mu = self.fc_mu(out)
+    #     sigma = torch.exp(self.fc_sigma(out))
+    #     return mu.view(x.size(0), self.seq_out_len, self.output_dim), sigma.view(x.size(0), self.seq_out_len,
+    #                                                                              self.output_dim)
 
 
 plt.rcParams['font.sans-serif'] = ['SimHei']
